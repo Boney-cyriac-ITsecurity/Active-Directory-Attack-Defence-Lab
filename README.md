@@ -1,0 +1,133 @@
+# Project 8 — Active Directory Attack & Defence Lab
+
+A home lab simulating real-world Active Directory attacks and detecting them using Splunk SIEM. Built to demonstrate SOC analyst skills — log analysis, threat detection, and SIEM query writing.
+
+---
+
+## Lab Architecture
+
+| Machine | OS                  | IP             | Role               |
+|---------|---------------------|----------------|--------------------|
+| DC01    | Windows Server 2022 | 192.168.56.10  | Domain Controller  |
+| WS01    | Windows 10 21H2     | 192.168.56.11  | Victim Workstation |
+| Kali    | Kali Linux 2026.1   | 192.168.56.102 | Attacker           |
+| Ubuntu  | Ubuntu 22.04        | 192.168.1.42   | Splunk SIEM        |
+
+All VMs hosted on VirtualBox with a host-only network. Splunk Universal Forwarder deployed on DC01 and WS01, forwarding Windows Security Event Logs to the Ubuntu Splunk instance.
+
+---
+
+## Attacks Simulated & Detected
+
+### 1 — Password Spray
+- **Tool:** Impacket / CrackMapExec
+- **Target:** Domain user `jsmith` (weak password)
+- **Event Generated:** 4625 — Failed Logon
+- **Detection:** 22 failed logon attempts from single IP in short window
+
+**Splunk Query:**
+```spl
+index=main EventCode=4625
+| rex field=Message "Source Network Address:\s+(?<src_ip>\d+\.\d+\.\d+\.\d+)"
+| stats count by src_ip, Account_Name
+| where count > 5
+| sort -count
+```
+
+---
+
+### 2 — AS-REP Roasting
+- **Tool:** Impacket GetNPUsers.py
+- **Target:** `sconnor` — configured with DoesNotRequirePreAuth = True
+- **Event Generated:** 4768 — Kerberos TGT Request with RC4 encryption (0x17)
+- **Detection:** Event 4768 from external IP with encryption type 0x17 instead of expected AES (0x12)
+
+**Splunk Query:**
+```spl
+index=main EventCode=4768 Ticket_Encryption_Type=0x17
+| table _time, Account_Name, Client_Address, Ticket_Encryption_Type
+```
+
+---
+
+### 3 — Kerberoasting
+- **Tool:** Impacket GetUserSPNs.py
+- **Target:** `sqlsvc` — service account with SPN (MSSQLSvc/DC01.corp.local:1433)
+- **Event Generated:** 4769 — Kerberos Service Ticket Request with RC4 encryption (0x17)
+- **Detection:** Event 4769 for sqlsvc from external IP with encryption type 0x17
+
+**Splunk Query:**
+```spl
+index=main EventCode=4769 Service_Name=sqlsvc
+| table _time, Account_Name, Service_Name, Ticket_Encryption_Type, Client_Address
+```
+
+---
+
+## Splunk Dashboard
+
+Built a single dashboard with 3 panels — one per attack — providing a unified view of all active directory threat detections.
+
+![Dashboard](Screenshots/phase3-dashboard-full-1.png)
+![Dashboard](Screenshots/phase3-dashboard-full-2.png)
+
+---
+
+## Key Event IDs Reference
+
+| Event ID | Meaning                         | Attack                |
+|----------|---------------------------------|-----------------------|
+| 4625     | Failed logon                    | Password Spray        |
+| 4624     | Successful logon                | Lateral Movement      |
+| 4768     | Kerberos TGT request            | AS-REP Roasting       |
+| 4769     | Kerberos service ticket request | Kerberoasting         |
+| 4672     | Special privileges assigned     | Privilege Escalation  |
+| 4728     | User added to security group    | DA Escalation         |
+
+---
+
+## Tools Used
+
+| Category        | Tool                          |
+|-----------------|-------------------------------|
+| Virtualisation  | Oracle VirtualBox             |
+| SIEM            | Splunk Enterprise 9.2.1       |
+| Log Forwarding  | Splunk Universal Forwarder    |
+| Endpoint Logs   | Sysmon v15.20 (SwiftOnSecurity config) |
+| Attack          | Impacket, Kali Linux          |
+| Documentation   | VS Code, Markdown             |
+
+---
+
+## Project Structure
+
+```
+Project-08-Active-Directory/
+├── Attacks/          # Attack commands and notes
+├── Detection/        # Splunk queries (splunk-queries.md)
+├── Report/           # Final report
+├── Screenshots/      # Evidence screenshots
+├── Setup/            # sysmonconfig.xml
+└── labnote.md        # Phase-by-phase progress log
+```
+
+---
+
+## Skills Demonstrated
+
+- Active Directory setup and administration
+- Sysmon deployment and configuration for enhanced Windows logging
+- Splunk Universal Forwarder deployment and log pipeline setup
+- Kerberos attack simulation (AS-REP Roasting, Kerberoasting)
+- Brute force / password spray simulation
+- SPL query writing for threat detection
+- SIEM dashboard creation for security monitoring
+- Incident evidence documentation
+
+---
+
+## Author
+
+**Boney Cyriac**  
+Cybersecurity | SOC | Penetration Testing  
+[LinkedIn](https://linkedin.com/in/boney-cyriac) | [GitHub](https://github.com/Boney-cyriac-ITsecurity)
