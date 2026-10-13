@@ -83,6 +83,13 @@ index=main EventCode=4768 Ticket_Encryption_Type=0x17
 index=main EventCode=4769 Service_Name=sqlsvc
 | table _time, Account_Name, Service_Name, Ticket_Encryption_Type, Client_Address
 ```
+**SOC Analyst Interpretation**
+
+* **Observation:** The query searches Event ID 4768 records for TGT requests using RC4 encryption (`0x17`).
+* **Attack context:** AS-REP Roasting targets accounts configured with Kerberos pre-authentication disabled. The lab target, `sconnor`, is configured with `DoesNotRequirePreAuth = True`.
+* **Investigation:** Review the account, client address, timestamp, encryption type, and the account's pre-authentication configuration. Correlate with other domain-controller events and the lab's attack timeline.
+* **Detection limitation:** RC4 encryption is not sufficient by itself to confirm AS-REP Roasting. The query may identify legitimate RC4 use and will not necessarily identify every AS-REP Roasting attempt.
+* **Recommended response:** Validate the account configuration and activity. If the evidence supports malicious activity, follow the incident-response process and review whether the account requires remediation.
 
 ---
 
