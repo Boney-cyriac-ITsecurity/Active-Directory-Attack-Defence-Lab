@@ -3,6 +3,21 @@
 A home lab simulating real-world Active Directory attacks and detecting them using Splunk SIEM. Built to demonstrate SOC analyst skills — log analysis, threat detection, and SIEM query writing.
 
 ---
+## Table of Contents
+
+* [Lab Architecture](#lab-architecture)
+* [Attacks Simulated & Detected](#attacks-simulated--detected)
+* [Splunk Dashboard](#splunk-dashboard)
+* [Windows Security Events](#windows-security-events)
+* [Tools Used](#tools-used)
+* [Project Structure](#project-structure)
+* [Skills Demonstrated](#skills-demonstrated)
+
+
+
+
+
+
 
 ## Lab Architecture
 
@@ -73,7 +88,7 @@ Built a single dashboard with 3 panels — one per attack — providing a unifie
 
 ---
 
-## Key Event IDs Reference
+## Windows Security Events
 
 | Event ID | Meaning                         | Attack                |
 |----------|---------------------------------|-----------------------|
