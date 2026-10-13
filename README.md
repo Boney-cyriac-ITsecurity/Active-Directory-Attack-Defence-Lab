@@ -62,13 +62,20 @@ index=main EventCode=4625
 - **Tool:** Impacket GetNPUsers.py
 - **Target:** `sconnor` — configured with DoesNotRequirePreAuth = True
 - **Event Generated:** 4768 — Kerberos TGT Request with RC4 encryption (0x17)
-- **Detection:** Event 4768 from external IP with encryption type 0x17 instead of expected AES (0x12)
+* **Detection:** Event ID 4768 TGT requests using RC4 encryption (`0x17`) are flagged for investigation, particularly when associated with accounts configured without Kerberos pre-authentication.
 
 **Splunk Query:**
 ```spl
 index=main EventCode=4768 Ticket_Encryption_Type=0x17
 | table _time, Account_Name, Client_Address, Ticket_Encryption_Type
 ```
+**SOC Analyst Interpretation**
+
+* **Observation:** The query searches Event ID 4768 records for TGT requests using RC4 encryption (`0x17`).
+* **Attack context:** AS-REP Roasting targets accounts configured with Kerberos pre-authentication disabled. The lab target, `sconnor`, is configured with `DoesNotRequirePreAuth = True`.
+* **Investigation:** Review the account, client address, timestamp, encryption type, and the account's pre-authentication configuration. Correlate with other domain-controller events and the lab's attack timeline.
+* **Detection limitation:** RC4 encryption is not sufficient by itself to confirm AS-REP Roasting. The query may identify legitimate RC4 use and will not necessarily identify every AS-REP Roasting attempt.
+* **Recommended response:** Validate the account configuration and activity. If the evidence supports malicious activity, follow the incident-response process and review whether the account requires remediation.
 
 ---
 
@@ -85,11 +92,12 @@ index=main EventCode=4769 Service_Name=sqlsvc
 ```
 **SOC Analyst Interpretation**
 
-* **Observation:** The query searches Event ID 4768 records for TGT requests using RC4 encryption (`0x17`).
-* **Attack context:** AS-REP Roasting targets accounts configured with Kerberos pre-authentication disabled. The lab target, `sconnor`, is configured with `DoesNotRequirePreAuth = True`.
-* **Investigation:** Review the account, client address, timestamp, encryption type, and the account's pre-authentication configuration. Correlate with other domain-controller events and the lab's attack timeline.
-* **Detection limitation:** RC4 encryption is not sufficient by itself to confirm AS-REP Roasting. The query may identify legitimate RC4 use and will not necessarily identify every AS-REP Roasting attempt.
-* **Recommended response:** Validate the account configuration and activity. If the evidence supports malicious activity, follow the incident-response process and review whether the account requires remediation.
+* **Observation:** The query searches Event ID 4769 records associated with the `sqlsvc` service account and displays the timestamp, requesting account, service name, encryption type, and client address.
+* **Attack context:** Kerberoasting targets service accounts associated with Service Principal Names (SPNs). An attacker may request service tickets and attempt offline password cracking.
+* **Investigation:** Review the requesting account, client address, timestamp, ticket encryption type, and service account details. Correlate the event with the lab's attack timeline and other domain-controller logs.
+* **Detection limitation:** Event ID 4769 and RC4 encryption (`0x17`) do not independently confirm Kerberoasting. The current query filters by service name but does not explicitly filter on encryption type or identify unusual ticket-request patterns.
+* **Recommended response:** Validate whether the request was expected. If suspicious activity is supported by additional evidence, follow the incident-response process and assess the service account's password strength and privileges.
+ion.
 
 ---
 
