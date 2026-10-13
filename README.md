@@ -48,6 +48,13 @@ index=main EventCode=4625
 | where count > 5
 | sort -count
 ```
+**SOC Analyst Interpretation**
+
+* **Observation:** The query identifies source IP addresses and account names associated with repeated failed logon events (Event ID 4625).
+* **Investigation:** Review the time window, source IP, targeted accounts, logon type, and any successful logons that follow the failures.
+* **Detection logic:** The current threshold flags more than five failures grouped by source IP and account name. This is a starting point for lab testing, not a universal production threshold.
+* **Potential false positives:** Mistyped passwords, stale saved credentials, and misconfigured services can generate repeated failures.
+* **Recommended response:** Validate the activity against expected user behaviour and other logs. If malicious activity is supported by the evidence, follow the organisation's incident-response process.
 
 ---
 
