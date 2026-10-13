@@ -97,8 +97,6 @@ index=main EventCode=4769 Service_Name=sqlsvc
 * **Investigation:** Review the requesting account, client address, timestamp, ticket encryption type, and service account details. Correlate the event with the lab's attack timeline and other domain-controller logs.
 * **Detection limitation:** Event ID 4769 and RC4 encryption (`0x17`) do not independently confirm Kerberoasting. The current query filters by service name but does not explicitly filter on encryption type or identify unusual ticket-request patterns.
 * **Recommended response:** Validate whether the request was expected. If suspicious activity is supported by additional evidence, follow the incident-response process and assess the service account's password strength and privileges.
-ion.
-
 ---
 
 ## Splunk Dashboard
